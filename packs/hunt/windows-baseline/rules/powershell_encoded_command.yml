@@ -1,0 +1,32 @@
+title: PowerShell Encoded Command Execution
+id: 0e3b1c4a-8f6d-4b7e-9a2c-1d5e7f9b3a11
+status: stable
+description: >
+  Detects launch of powershell.exe with -enc/-EncodedCommand. Encoded command lines are
+  a common obfuscation layer for downloaders and initial-access tooling.
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+  - https://attack.mitre.org/techniques/T1027/
+author: Philopater Shenouda (Ph.Sh-Packs)
+date: 2026-11-06
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  sel_img:
+    Image|endswith: '\powershell.exe'
+  sel_kw:
+    CommandLine|contains:
+      - ' -enc '
+      - ' -EncodedCommand '
+      - ' -ec '
+  condition: sel_img and sel_kw
+falsepositives:
+  - Legitimate administrative scripts that deliberately use encoded commands
+  - Software deployment systems wrapping encoded payloads
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - attack.defense_evasion
+  - attack.t1027

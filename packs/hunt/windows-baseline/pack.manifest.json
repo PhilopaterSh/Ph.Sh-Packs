@@ -1,0 +1,18 @@
+{
+  "manifest_version": 1,
+  "pack_id": "hunt.windows-baseline",
+  "family": "hunt",
+  "version": "0.1.0",
+  "min_app_version": "0.0.0",
+  "issued": "2026-11-06",
+  "license": "CC-BY-4.0",
+  "files": [
+    { "path": "rules/powershell_encoded_command.yml", "sha256": "0e7927b06ea47900d4207d32d9643c7a2c418fff03a948ec917b34a16788d714", "size": 950 },
+    { "path": "rules/lsass_minidump_rundll32.yml", "sha256": "ec13a338a028168f9cd194ae669ae9f5005b62f68f69192ef0959f92787b2b55", "size": 810 },
+    { "path": "rules/schtasks_remote_create.yml", "sha256": "ed97d04c2e4f2af90adf96826cb1ce5c50ee65a8eda3923134852bf38b1fc1ec", "size": 805 }
+  ],
+  "sources": [
+    { "name": "MITRE ATT&CK T1059.001 / T1003.001 / T1053.005", "url": "https://attack.mitre.org/", "retrieved": "2026-11-06" }
+  ],
+  "expires_hint_days": 90
+}

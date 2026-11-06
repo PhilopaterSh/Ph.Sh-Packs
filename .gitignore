@@ -1,0 +1,8 @@
+# OS junk
+Thumbs.db
+.DS_Store
+
+# never commit keys or local scratch
+*.pfx
+keys/
+.keys/
