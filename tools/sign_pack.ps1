@@ -31,7 +31,7 @@ foreach ($f in $manifest.files) {
 # --- 2) load private key ---
 $j = Get-Content $KeysPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($j.curve -ne 'P-256') { throw "Wrong curve: $($j.curve)" }
-$ecdsa = New-Object System.Security.Cryptography.ECDsaCng
+$ecdsa = [System.Security.Cryptography.ECDsa]::Create()   # cross-platform (Windows CNG / Linux OpenSSL)
 try {
     $p = New-Object System.Security.Cryptography.ECParameters
     $p.Curve = [System.Security.Cryptography.ECCurve+NamedCurves]::nistP256

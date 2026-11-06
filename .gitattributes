@@ -1,0 +1,8 @@
+# Signed-content repo: byte stability across platforms is a security property.
+# Everything text must be LF in the repo AND in every checkout, or signature/hash
+# verification breaks between Windows (dev/sign) and Linux (CI/consumers).
+* text=auto eol=lf
+
+# explicit: never convert these
+*.png binary
+*.ico binary

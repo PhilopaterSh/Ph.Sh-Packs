@@ -40,7 +40,7 @@ $x = New-Object byte[] 32; $y = New-Object byte[] 32
 [Array]::Copy($spki, 27, $x, 0, 32)
 [Array]::Copy($spki, 59, $y, 0, 32)
 
-$ecdsa = New-Object System.Security.Cryptography.ECDsaCng
+$ecdsa = [System.Security.Cryptography.ECDsa]::Create()   # cross-platform (Windows CNG / Linux OpenSSL)
 try {
     $p = New-Object System.Security.Cryptography.ECParameters
     $p.Curve = [System.Security.Cryptography.ECCurve+NamedCurves]::nistP256

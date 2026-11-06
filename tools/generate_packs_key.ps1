@@ -15,13 +15,9 @@ $ErrorActionPreference = 'Stop'
 if (Test-Path $KeysPath)    { throw "Refusing to overwrite existing key file: $KeysPath" }
 if (Test-Path $PublicKeyPath) { throw "Refusing to overwrite existing public key: $PublicKeyPath" }
 
-# NOTE: ECDsaCng parameterless ctor defaults to P-521 in .NET Framework, and CNG refuses
-# to export private material unless the key is created with plaintext export policy.
-$createParams = New-Object System.Security.Cryptography.CngKeyCreationParameters
-$createParams.ExportPolicy = [System.Security.Cryptography.CngExportPolicies]::AllowExport -bor
-                             [System.Security.Cryptography.CngExportPolicies]::AllowPlaintextExport
-$key = [System.Security.Cryptography.CngKey]::Create([System.Security.Cryptography.CngAlgorithm]::ECDsaP256, $null, $createParams)
-$ecdsa = New-Object System.Security.Cryptography.ECDsaCng($key)
+# Cross-platform P-256 key creation (avoids the ECDsaCng P-521 default gotcha and
+# the CNG export-policy dance entirely; works the same on Windows/Linux pwsh).
+$ecdsa = [System.Security.Cryptography.ECDsa]::Create([System.Security.Cryptography.ECCurve+NamedCurves]::nistP256)
 try {
     $p = $ecdsa.ExportParameters($true)   # include private D
     if ($null -eq $p.D -or $p.D.Length -ne 32 -or $p.Q.X.Length -ne 32 -or $p.Q.Y.Length -ne 32) {

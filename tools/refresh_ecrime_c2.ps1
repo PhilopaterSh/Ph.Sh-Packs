@@ -66,7 +66,7 @@ $lines.Add("`t<rules_blocklist>")
 foreach ($ip in $filtered) { $lines.Add("`t`t" + '<item name="phsh_etbotcc_' + ($ip -replace '\.', '-') + '" rule="' + $ip + '" />') }
 $lines.Add("`t</rules_blocklist>")
 $lines.Add('</root>')
-[IO.File]::WriteAllText((Join-Path $packDir 'rules.xml'), ($lines -join "`r`n") + "`r`n")
+[IO.File]::WriteAllText((Join-Path $packDir 'rules.xml'), ($lines -join "`n") + "`n")   # LF only - .gitattributes enforces eol=lf; hashes must match repo bytes
 
 # --- 4) regenerate manifest ---
 $rulesPath = Join-Path $packDir 'rules.xml'
