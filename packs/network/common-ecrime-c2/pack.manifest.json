@@ -1,0 +1,30 @@
+{
+    "manifest_version":  1,
+    "pack_id":  "network.common-ecrime-c2",
+    "family":  "network",
+    "version":  "0.2.0",
+    "min_app_version":  "3.7.0-r2",
+    "issued":  "2026-11-06",
+    "license":  "CC-BY-4.0",
+    "files":  [
+                  {
+                      "path":  "rules.xml",
+                      "sha256":  "5f02c01483c8195765e8c260daf96f40f029525c96025071ed914030a1b7a3c0",
+                      "size":  703
+                  }
+              ],
+    "sources":  [
+                    {
+                        "license":  "ETOpen free-use, attribution required",
+                        "url":  "https://rules.emergingthreats.net/",
+                        "name":  "Emerging Threats Open - botcc ruleset",
+                        "retrieved":  "2026-11-06"
+                    },
+                    {
+                        "url":  "https://feodotracker.abuse.ch/",
+                        "name":  "Upstream: abuse.ch Feodo Tracker data via ET",
+                        "retrieved":  "2026-11-06"
+                    }
+                ],
+    "expires_hint_days":  14
+}

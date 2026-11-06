@@ -35,10 +35,16 @@ tools\generate_packs_key.ps1 -KeysPath "D:\CV\Github\.keys\packs-signing.json" -
 tools\selftest.ps1 -KeysPath "D:\CV\Github\.keys\packs-signing.json"
 
 # توقيع حزمة (يتحقق من الـ hashes داخلها قبل التوقيع)
-tools\sign_pack.ps1 -PackDir "packs\network\mena-common-threats" -KeysPath "D:\CV\Github\.keys\packs-signing.json"
+tools\sign_pack.ps1 -PackDir "packs\network\common-ecrime-c2" -KeysPath "D:\CV\Github\.keys\packs-signing.json"
 
 # التحقق من حزمة (توقيع ثم hashes) — exit 0 = PASS
-tools\verify_pack.ps1 -PackDir "packs\network\mena-common-threats"
+tools\verify_pack.ps1 -PackDir "packs\network\common-ecrime-c2"
+
+# تحديث حزمة C2 من المصدر الحي (ET Open botcc) — يولّد rules.xml + manifest، التوقيع بعدها يدوي
+tools\refresh_ecrime_c2.ps1
+
+# فحص كل الحزم (بنية + hashes + تواقيع) — نفس ما يديره CI، بلا أسرار
+tools\lint.ps1
 ```
 
 ## الترخيص

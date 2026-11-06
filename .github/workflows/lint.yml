@@ -1,0 +1,20 @@
+name: lint
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint all packs (structure + hashes + signatures)
+        shell: pwsh
+        run: ./tools/lint.ps1 -RepoRoot $env:GITHUB_WORKSPACE
+
+      # NOTE: deliberately no signing secrets in CI.
+      # Signing happens locally on the maintainer machine (keys never leave .keys\).
+      # CI proves: committed manifests match committed content AND committed signatures.
