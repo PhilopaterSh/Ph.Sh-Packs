@@ -2,7 +2,7 @@
 <!-- Ph.Sh-Packs :: network/common-ecrime-c2 v0.2.0 -->
 <!-- Format: simplewall internal profile (version 6) -->
 <!-- Source: Emerging Threats Open botcc (free-use, attribution required) - feeds ET botcc aggregate Feodo Tracker data -->
-<root timestamp="1793993867" type="4" version="6">
+<root timestamp="1793994249" type="4" version="6">
 	<rules_blocklist>
 		<item name="phsh_etbotcc_162-243-103-246" rule="162.243.103.246" />
 		<item name="phsh_etbotcc_178-62-3-223" rule="178.62.3.223" />
