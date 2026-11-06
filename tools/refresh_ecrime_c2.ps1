@@ -87,7 +87,10 @@ $m = [ordered]@{
     )
     expires_hint_days = 14
 }
-[IO.File]::WriteAllText((Join-Path $packDir 'pack.manifest.json'), ($m | ConvertTo-Json -Depth 6))
+# PS 5.1 ConvertTo-Json emits CRLF inside its output - normalize to LF BEFORE writing,
+# otherwise the signature covers CRLF bytes while the repo stores LF (CI verify breaks).
+$json = ($m | ConvertTo-Json -Depth 6) -replace "`r`n", "`n"
+[IO.File]::WriteAllText((Join-Path $packDir 'pack.manifest.json'), $json)
 
 Write-Host ("REFRESH OK : {0} IPs -> rules.xml ({1} bytes, sha256 {2})" -f $filtered.Count, $size, $hash.Substring(0, 16))
 Write-Host "NEXT : sign_pack.ps1 -> verify_pack.ps1 (manual, local key)"
