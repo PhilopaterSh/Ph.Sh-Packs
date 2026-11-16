@@ -15,6 +15,11 @@ jobs:
         shell: pwsh
         run: ./tools/lint.ps1 -RepoRoot $env:GITHUB_WORKSPACE
 
+      - name: YARA-X quality gate (compile every committed rule)
+        run: |
+          pip install --quiet yara-x
+          python tools/yara_gate.py "$GITHUB_WORKSPACE"
+
       # NOTE: deliberately no signing secrets in CI.
       # Signing happens locally on the maintainer machine (keys never leave .keys\).
       # CI proves: committed manifests match committed content AND committed signatures.
