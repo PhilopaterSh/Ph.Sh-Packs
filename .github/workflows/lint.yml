@@ -43,7 +43,7 @@ jobs:
           done
           echo "openssl verified $found manifest signature(s)"
 
-      - name: Validate Sigma rules (audit L3: the hunt pack shipped unvalidated)
+      - name: "Validate Sigma rules (audit L3: the hunt pack shipped unvalidated)"
         run: |
           pip install --quiet sigma-cli==1.1.2 pysigma==0.11.20
           sigma check $(find packs -name "*.yml" -path "*hunt*")
