@@ -45,7 +45,7 @@ jobs:
 
       - name: "Validate Sigma rules (audit L3: the hunt pack shipped unvalidated)"
         run: |
-          pip install --quiet sigma-cli==1.1.2 pysigma==0.11.20
+          pip install --quiet sigma-cli==4.0.1 pysigma==2.1.0
           sigma check $(find packs -name "*.yml" -path "*hunt*")
 
       - name: YARA-X quality gate (compile every committed rule; pinned — audit L2)
