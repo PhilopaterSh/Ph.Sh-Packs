@@ -1,30 +1,36 @@
 {
-    "manifest_version":  1,
-    "pack_id":  "network.common-ecrime-c2",
-    "family":  "network",
-    "version":  "0.2.0",
-    "min_app_version":  "3.7.0-r2",
-    "issued":  "2026-11-06",
-    "license":  "CC-BY-4.0",
-    "files":  [
-                  {
-                      "path":  "rules.xml",
-                      "sha256":  "882b986589e96f49f8659ed0c4ca70cf9128051f3df92b3f331da4ecd5329df0",
-                      "size":  690
-                  }
-              ],
-    "sources":  [
-                    {
-                        "license":  "ETOpen free-use, attribution required",
-                        "url":  "https://rules.emergingthreats.net/",
-                        "name":  "Emerging Threats Open - botcc ruleset",
-                        "retrieved":  "2026-11-06"
-                    },
-                    {
-                        "url":  "https://feodotracker.abuse.ch/",
-                        "name":  "Upstream: abuse.ch Feodo Tracker data via ET",
-                        "retrieved":  "2026-11-06"
-                    }
-                ],
-    "expires_hint_days":  14
+  "manifest_version": 1,
+  "pack_id": "network.common-ecrime-c2",
+  "family": "network",
+  "version": "0.3.1",
+  "min_app_version": "3.7.0-r2",
+  "issued": "2026-11-17",
+  "license": "LicenseRef-ETOpen-1.1",
+  "files": [
+    {
+      "path": "rules.xml",
+      "sha256": "a856f64331496f07a7508caf11217921a60cff18b27394c6523668fac3006e94",
+      "size": 690
+    },
+    {
+      "path": "LICENSE-ETOpen.txt",
+      "sha256": "4b5bd5c9cbc1574608ec3bfb85c8add4755a14ebad80571130bbbdbd6335cbd2",
+      "size": 1946
+    }
+  ],
+  "sources": [
+    {
+      "license": "LicenseRef-ETOpen-1.1 (redistribution permitted with copyright notice)",
+      "url": "https://rules.emergingthreats.net/",
+      "name": "Emerging Threats Open - botcc ruleset",
+      "upstream_sha256": "86bf6017bfa7e89ad2b3aa5c377528459cb3ea55841004ac2a73532d34bfeb40",
+      "retrieved": "2026-11-17"
+    },
+    {
+      "url": "https://feodotracker.abuse.ch/",
+      "name": "Upstream: abuse.ch Feodo Tracker data via ET",
+      "retrieved": "2026-11-17"
+    }
+  ],
+  "expires_hint_days": 14
 }

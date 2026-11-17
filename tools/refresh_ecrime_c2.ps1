@@ -17,9 +17,8 @@
 #>
 param(
     [string]$RepoRoot = (Split-Path $PSScriptRoot -Parent),
-    [string]$Version = '0.2.0',
-    [int]$MaxEntries = 250,
-    [int]$MinOctet = 1   # drop leading-octet 0 (0.0.0.0/8) and similar junk early
+    [string]$Version = '0.3.0',
+    [int]$MaxEntries = 250
 )
 $ErrorActionPreference = 'Stop'
 
@@ -38,18 +37,34 @@ $stamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 [IO.File]::WriteAllText((Join-Path $provDir ("et_botcc_" + $stamp + ".rules")), $raw)
 
 # --- 2) extract + filter IPv4s ---
-$reservedTopOctets = @(0, 10, 127, 169, 172, 192, 198, 203, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255)
+# Audit M4 fix: proper CIDR-based exclusion of special-use ranges ONLY (RFC 1112/1918/5737/6598/8190...
+# and multicast/reserved). The previous top-octet blocklist wrongly dropped entire /8s (172/8 = Google, 192/8, 203/8).
+function ConvertTo-IPv4Int([string]$ip) {
+    $o = $ip.Split('.')
+    if ($o.Count -ne 4) { return [long]0 }
+    # int64 arithmetic: PS 5.1 -shl on uint32 overflows into negative int32 (audit-found bug)
+    return ([long]$o[0] -shl 24) -bor ([long]$o[1] -shl 16) -bor ([long]$o[2] -shl 8) -bor [long]$o[3]
+}
+function Test-IpInCidr([string]$ip, [string]$cidr) {
+    $net, $bits = $cidr.Split('/')
+    $bits = [int]$bits
+    $mask = if ($bits -eq 0) { [long]0 } else { ([long]0xFFFFFFFF -shl (32 - $bits)) -band [long]0xFFFFFFFF }
+    return ((ConvertTo-IPv4Int $ip) -band $mask) -eq ((ConvertTo-IPv4Int $net) -band $mask)
+}
+$reservedCidrs = @(
+    '0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8', '169.254.0.0/16',
+    '172.16.0.0/12', '192.0.0.0/24', '192.0.2.0/24', '192.88.99.0/24', '192.168.0.0/16',
+    '198.18.0.0/15', '198.51.100.0/24', '203.0.113.0/24', '224.0.0.0/4', '240.0.0.0/4'
+)
 $ips = New-Object System.Collections.Generic.HashSet[string]
 foreach ($m in [regex]::Matches($raw, '\[([0-9]{1,3}(?:\.[0-9]{1,3}){3})\]')) { [void]$ips.Add($m.Groups[1].Value) }
 foreach ($m in [regex]::Matches($raw, 'content:"([0-9]{1,3}(?:\.[0-9]{1,3}){3})"')) { [void]$ips.Add($m.Groups[1].Value) }
 
 $filtered = @($ips | Where-Object {
-    $o = $_.Split('.')
-    ($o.Count -eq 4) -and
-    ([int]$o[0] -ge $MinOctet) -and
-    (-not $reservedTopOctets.Contains([int]$o[0])) -and
-    (([int]$o[1]) -ne 100 -or [int]$o[0] -ne 100) -and   # drop 100.64.0.0/10 CGNAT partial guard
-    (([int]$o[0]) -ne 100 -or [int]$o[1] -lt 64 -or [int]$o[1] -gt 127)
+    $ip = $_
+    $ok = $true
+    foreach ($c in $reservedCidrs) { if (Test-IpInCidr $ip $c) { $ok = $false; break } }
+    $ok
 } | Sort-Object)
 if ($filtered.Count -eq 0) { throw "No usable IPs extracted - aborting (would not sign an empty pack)" }
 if ($filtered.Count -gt $MaxEntries) { $filtered = $filtered[0..($MaxEntries - 1)] }
@@ -72,6 +87,9 @@ $lines.Add('</root>')
 $rulesPath = Join-Path $packDir 'rules.xml'
 $hash = (Get-FileHash -Algorithm SHA256 $rulesPath).Hash.ToLower()
 $size = (Get-Item $rulesPath).Length
+# Audit M5 fix: anchor the upstream fetch - record the SHA-256 of the exact bytes pulled, so the
+# manual diff-review before signing has a pinned reference (and a poisoned fetch is detectable).
+$rawHash = (Get-FileHash -Algorithm SHA256 -InputStream ([IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($raw)))).Hash.ToLower()
 $m = [ordered]@{
     manifest_version = 1
     pack_id          = 'network.common-ecrime-c2'
@@ -79,10 +97,13 @@ $m = [ordered]@{
     version          = $Version
     min_app_version  = '3.7.0-r2'
     issued           = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
-    license          = 'CC-BY-4.0'
-    files            = @(@{ path = 'rules.xml'; sha256 = $hash; size = $size })
+    license          = 'LicenseRef-ETOpen-1.1'
+    files            = @(
+        @{ path = 'rules.xml'; sha256 = $hash; size = $size },
+        @{ path = 'LICENSE-ETOpen.txt'; sha256 = (Get-FileHash -Algorithm SHA256 (Join-Path $packDir 'LICENSE-ETOpen.txt')).Hash.ToLower(); size = (Get-Item (Join-Path $packDir 'LICENSE-ETOpen.txt')).Length }
+    )
     sources          = @(
-        @{ name = 'Emerging Threats Open - botcc ruleset'; url = 'https://rules.emergingthreats.net/'; retrieved = $stamp; license = 'ETOpen free-use, attribution required' },
+        @{ name = 'Emerging Threats Open - botcc ruleset'; url = 'https://rules.emergingthreats.net/'; retrieved = $stamp; license = 'LicenseRef-ETOpen-1.1 (redistribution permitted with copyright notice)'; upstream_sha256 = $rawHash },
         @{ name = 'Upstream: abuse.ch Feodo Tracker data via ET'; url = 'https://feodotracker.abuse.ch/'; retrieved = $stamp }
     )
     expires_hint_days = 14
@@ -93,5 +114,5 @@ $json = ($m | ConvertTo-Json -Depth 6) -replace "`r`n", "`n"
 [IO.File]::WriteAllText((Join-Path $packDir 'pack.manifest.json'), $json)
 
 Write-Host ("REFRESH OK : {0} IPs -> rules.xml ({1} bytes, sha256 {2})" -f $filtered.Count, $size, $hash.Substring(0, 16))
-Write-Host "NEXT : sign_pack.ps1 -> verify_pack.ps1 (manual, local key)"
+Write-Host "NEXT : MANDATORY diff review of rules.xml vs the previous signed pack (audit M5), then sign_pack.ps1 -> verify_pack.ps1 (manual, local key)"
 exit 0

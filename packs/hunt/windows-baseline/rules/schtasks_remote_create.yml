@@ -1,13 +1,17 @@
 title: Scheduled Task Creation via schtasks.exe
 id: 8d2f6b1e-5c93-4a07-b3d4-2e8f1a6c9b33
-status: stable
+status: test
 description: >
   Baseline visibility on scheduled task creation from the command line — a top-3
-  persistence vector on Windows. Tune once per environment, then alert on drift.
+  persistence vector on Windows. Matches local AND remote task creation; tune once
+  per environment, then alert on drift. (Audit L4: renamed from the misleading
+  "Remote" title — the detection covers both until remote-only indicators are added.)
 references:
   - https://attack.mitre.org/techniques/T1053/005/
 author: Philopater Shenouda (Ph.Sh-Packs)
+license: CC-BY-4.0
 date: 2026-11-06
+modified: 2026-11-17
 logsource:
   category: process_creation
   product: windows

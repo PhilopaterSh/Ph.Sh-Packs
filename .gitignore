@@ -6,3 +6,9 @@ Thumbs.db
 *.pfx
 keys/
 .keys/
+
+# transient decoded signatures (openssl steps decode base64 -> binary DER)
+*.sig.der
+
+# debug artifacts (never commit)
+_dbg/

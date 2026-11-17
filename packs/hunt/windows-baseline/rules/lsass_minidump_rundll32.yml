@@ -1,13 +1,15 @@
 title: LSASS Memory Dump via rundll32 comsvcs.dll MiniDump
 id: 4c7a9e2f-3b1d-4e58-8c6a-9f0d2b4e6a22
-status: stable
+status: test
 description: >
   Detects the canonical credential-dumping pattern: rundll32.exe loading comsvcs.dll
   and invoking MiniDump against lsass (well-documented LOLBin technique).
 references:
   - https://attack.mitre.org/techniques/T1003/001/
 author: Philopater Shenouda (Ph.Sh-Packs)
+license: CC-BY-4.0
 date: 2026-11-06
+modified: 2026-11-17
 logsource:
   category: process_creation
   product: windows

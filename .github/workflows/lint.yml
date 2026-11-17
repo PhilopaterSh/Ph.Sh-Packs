@@ -5,21 +5,55 @@ on:
   pull_request:
   workflow_dispatch:
 
+# one run per ref at a time; cancel superseded runs (audit L2)
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v4.2.2 pinned by SHA (audit L2)
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Lint all packs (structure + hashes + signatures)
+      - name: Lint all packs (structure + paths + hashes + sizes + coverage + signatures)
         shell: pwsh
         run: ./tools/lint.ps1 -RepoRoot $env:GITHUB_WORKSPACE
 
-      - name: YARA-X quality gate (compile every committed rule)
+      # NOTE: selftest's full sign loop needs the private key, which never exists in CI.
+      # -VerifyOnly runs the key-free negative battery (structure/freshness/path/size/case checks
+      # fire BEFORE the signature stage, so garbage signatures make every case attributable).
+      # goldfish B1 fix: the previous invocation passed a nonexistent -KeysPath and aborted at the
+      # sign step, silently skipping every gate below.
+      - name: Verify-side negative cases on the CI runtime (key-free battery)
+        shell: pwsh
+        run: ./tools/selftest.ps1 -VerifyOnly -SkipOpenssl
+
+      - name: OpenSSL cross-check of committed pack signatures (third-party trust proof, audit C1)
         run: |
-          pip install --quiet yara-x
+          set -e
+          found=0
+          for m in $(find packs -name pack.manifest.json); do
+            dir=$(dirname "$m")
+            # .sig is Base64 text; openssl -signature expects BINARY DER - decode first
+            base64 -d "$dir/pack.manifest.json.sig" > "$dir/pack.manifest.json.sig.der"
+            openssl dgst -sha256 -verify tools/packs_public_key.pem -signature "$dir/pack.manifest.json.sig.der" "$m"
+            found=$((found+1))
+          done
+          echo "openssl verified $found manifest signature(s)"
+
+      - name: Validate Sigma rules (audit L3: the hunt pack shipped unvalidated)
+        run: |
+          pip install --quiet sigma-cli==1.1.2 pysigma==0.11.20
+          sigma check $(find packs -name "*.yml" -path "*hunt*")
+
+      - name: YARA-X quality gate (compile every committed rule; pinned — audit L2)
+        run: |
+          pip install --quiet yara-x==1.23.0
           python tools/yara_gate.py "$GITHUB_WORKSPACE"
 
       # NOTE: deliberately no signing secrets in CI.
       # Signing happens locally on the maintainer machine (keys never leave .keys\).
-      # CI proves: committed manifests match committed content AND committed signatures.
+      # CI proves: committed manifests match committed content AND committed signatures,
+      # and that the signatures verify with a standard third-party tool (openssl).
